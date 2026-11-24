@@ -56,6 +56,14 @@ defmodule FileWard.Writer do
 
   defp write(_, _, _, _), do: Error.result(:body, :invalid_content)
 
+  defp detect(%{size: 0}, _metadata, %{content_mode: :opaque_attachment, allow_empty: false}) do
+    Error.result(:detect, :invalid_content)
+  end
+
+  defp detect(state, _metadata, %{content_mode: :opaque_attachment}) do
+    {:ok, Signatures.detect(state.prefix)}
+  end
+
   defp detect(state, metadata, policy) do
     detected = Signatures.detect(state.prefix)
     declared = metadata[:content_type]

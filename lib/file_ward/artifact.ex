@@ -7,7 +7,7 @@ defmodule FileWard.Artifact do
           path: Path.t(),
           size_bytes: non_neg_integer(),
           sha256: String.t(),
-          detected_media_type: String.t(),
+          detected_media_type: String.t() | nil,
           declared_media_type: binary() | nil,
           original_filename: binary() | nil,
           source_kind: :stream | :upload | :url

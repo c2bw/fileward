@@ -18,7 +18,8 @@ defmodule FileWard do
           {:ok, result} | {:error, Error.t()}
         when result: var
   def with_archive(source, policy, archive_policy, callback) when is_function(callback, 1) do
-    if ArchivePolicy.valid?(archive_policy) do
+    if ArchivePolicy.valid?(archive_policy) and
+         not match?(%Policy{content_mode: :opaque_attachment}, policy) do
       intake(
         source,
         policy,

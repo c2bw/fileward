@@ -12,6 +12,8 @@ defmodule FileWard.Policy do
     idle_timeout_ms: 5_000,
     strict_media_type: false,
     http: [schemes: [:https], redirects: :deny, address_scope: :public],
+    content_mode: :restricted_types,
+    allow_empty: false,
     media_types: [],
     staging_dir: nil
   ]
@@ -42,8 +44,7 @@ defmodule FileWard.Policy do
       positive?(p.max_inflight, 10_000) and
       positive?(p.disk_budget_bytes, 1 <<< 50) and p.disk_budget_bytes >= p.max_bytes and
       positive?(p.total_timeout_ms, 86_400_000) and positive?(p.idle_timeout_ms, 86_400_000) and
-      is_boolean(p.strict_media_type) and valid_http?(p.http) and
-      is_list(p.media_types) and p.media_types != [] and Enum.all?(p.media_types, &(&1 in @types)) and
+      is_boolean(p.strict_media_type) and valid_http?(p.http) and valid_content?(p) and
       is_binary(p.staging_dir) and String.valid?(p.staging_dir) and
       not String.contains?(p.staging_dir, <<0>>) and Path.type(p.staging_dir) == :absolute and
       Path.expand(p.staging_dir) != "/"
@@ -53,6 +54,18 @@ defmodule FileWard.Policy do
 
   @doc false
   def positive?(n, max), do: is_integer(n) and n > 0 and n <= max
+
+  defp valid_content?(%{content_mode: :restricted_types, allow_empty: false} = policy) do
+    is_list(policy.media_types) and policy.media_types != [] and
+      Enum.all?(policy.media_types, &(&1 in @types))
+  end
+
+  defp valid_content?(%{content_mode: :opaque_attachment} = policy) do
+    policy.media_types == [] and policy.strict_media_type == false and
+      is_boolean(policy.allow_empty)
+  end
+
+  defp valid_content?(_), do: false
 
   defp valid_http?(http) do
     defaults = @defaults[:http]

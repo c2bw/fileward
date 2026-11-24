@@ -38,3 +38,12 @@ Run `mix deps.get`. FileWard targets Elixir 1.18+ on OTP 27+ with a local POSIX 
 - [Release notes](CHANGELOG.md)
 
 Run `mix deps.get` and `mix test`. The local TLS fixtures use the `openssl` test executable. The library uses OTP TLS at runtime.
+
+## Opaque attachments
+
+For uninterpreted attachment storage, set `content_mode: :opaque_attachment` on
+the intake policy and omit `media_types` and `strict_media_type`. The artifact
+reports a recognized signature when present and `nil` for an unknown signature.
+Set `allow_empty: true` to admit empty attachments. Byte limits, staging,
+timeouts, SHA-256 calculation and HTTPS policy still apply. Archive extraction
+requires the default `:restricted_types` content mode.
